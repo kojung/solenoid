@@ -24,14 +24,14 @@ Int. J. on Recent Trends in Engineering and Technology, Vol. 8, No. 2, Jan 2013
 
 import math
 
-from solenoid.aliases import (
+from solenoid.units import (
     Area,
     DecayFactor,
     Force,
     Length,
     Permeability,
     Radius,
-    RelPermeability,
+    RelativePermeability,
     ResistancePerLength,
     Voltage,
     WindingFactor,

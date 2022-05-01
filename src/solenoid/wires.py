@@ -58,7 +58,7 @@ def awg_resistance_per_length(awg:WireGauge, material:str="copper", temp:Tempera
     Reference: http://www.endmemo.com/physics/resistt.php
     """
     coefficients = {
-        # material: (resistivity [ohm/m] at 293K, thermal coefficient [1/K])
+        # material: (resistivity [ohm.m] at 293K, thermal coefficient [1/K])
         "silver"     : (1.59e-8, 0.0038),
         "copper"     : (1.68e-8, 0.0039),
         "gold"       : (2.44e-8, 0.0034),
