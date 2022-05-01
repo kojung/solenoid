@@ -22,22 +22,22 @@ Paul H. Schimpf.
 Int. J. on Recent Trends in Engineering and Technology, Vol. 8, No. 2, Jan 2013
 """
 
-from typing import NewType
 import math
 
-# Type aliases for typecheck
-Area                = NewType('Area',                float)
-DecayFactor         = NewType('DecayFactor',         float)
-Force               = NewType('Force',               float)
-Length              = NewType('Length',              float)
-Permeability        = NewType('Permeability',        float)
-Radius              = NewType('Radius',              float)
-RelPermeability     = NewType('RelPermeability',     float)
-ResistancePerLength = NewType('ResistancePerLength', float)
-Voltage             = NewType('Voltage',             float)
-WindingFactor       = NewType('WindingFactor',       float)
-WireGauge           = NewType('WireGauge',           int)
-Turns               = NewType('Turns',               int)
+from solenoid.aliases import (
+    Area,
+    DecayFactor,
+    Force,
+    Length,
+    Permeability,
+    Radius,
+    RelPermeability,
+    ResistancePerLength,
+    Voltage,
+    WindingFactor,
+    WireGauge,
+    Turns,
+)
 
 # constants
 MU : Permeability = Permeability(4 * math.pi * 1e-7)
