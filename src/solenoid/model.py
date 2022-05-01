@@ -1,3 +1,19 @@
+# Solenoid
+# Copyright (C) 2022 Jung Ko <kojung@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 Model of a Solenoid
 Based on:
@@ -29,7 +45,7 @@ MU : Permeability = Permeability(4 * math.pi * 1e-7)
 def wire_area(awg: WireGauge) -> Area:
     """Determine wire cross section area in m^2"""
     # WIP
-    return Area(1)
+    return Area(awg)
 
 def packing_density() -> float:
     """Return wire packing density"""
@@ -49,7 +65,7 @@ def decay_factor(mu_r: RelPermeability) -> float:
 def res_per_length(awg: WireGauge) -> ResistancePerLength:
     """Compute wire resistance per length in ohms/m"""
     # WIP
-    return ResistancePerLength(1)
+    return ResistancePerLength(awg)
 
 def force(
     v: Voltage,
