@@ -24,60 +24,80 @@ Int. J. on Recent Trends in Engineering and Technology, Vol. 8, No. 2, Jan 2013
 
 import math
 
+from solenoid.wires import (
+    awg_area,
+    awg_resistance_per_length,
+)
 from solenoid.units import (
-    Area,
     DecayFactor,
     Force,
     Length,
     Permeability,
     Radius,
     RelativePermeability,
-    ResistancePerLength,
     Voltage,
     WindingFactor,
     WireGauge,
     Turns,
 )
 
-# constants
-MU : Permeability = Permeability(4 * math.pi * 1e-7)
-
-def wire_area(awg: WireGauge) -> Area:
-    """Determine wire cross section area in m^2"""
-    # WIP
-    return Area(awg)
-
 def packing_density() -> float:
-    """Return wire packing density"""
+    """
+    Wire packing density
+
+    For lattice, packing density <= pi / sqrt(12) = 0.907
+    For lattice, packing density <= pi / 4 = 0.785
+
+    Assume packing density of 0.7
+    """
     return 0.7
 
-def winding_factor(awg: WireGauge, r_o: Radius, l: Length, N: Turns) -> float:
-    """Compute winding factor"""
+def winding_factor(awg: WireGauge, r_o: Radius, l: Length, N: Turns) -> WindingFactor:
+    """
+    Compute winding factor
+
+    :param awg: Wire gauge
+    :param r_o: Solenoid nominal radius in meters
+    :param l:   Solenoid length in meters
+    :param N:   Number of turns
+    :return:    Winding factor
+    """
     numerator   = r_o ** 2
-    beta        = wire_area(awg) / (2 * packing_density() * l)
+    beta        = awg_area(awg) / (2 * packing_density() * l)
     denominator = (beta * N + r_o) ** 2
-    return numerator / denominator
+    return WindingFactor(numerator / denominator)
 
-def decay_factor(mu_r: RelPermeability) -> float:
-    """Compute decay factor"""
-    return math.log(mu_r)
+def decay_factor(mu_r: RelativePermeability) -> DecayFactor:
+    """
+    Compute decay factor
 
-def res_per_length(awg: WireGauge) -> ResistancePerLength:
-    """Compute wire resistance per length in ohms/m"""
-    # WIP
-    return ResistancePerLength(awg)
+    Model solenoid force along the axis as an exponential decaying
+    function. The decay factor expresses how fast the solenoid force
+    becomes 0 as the armature exits the solenoid.
+    """
+    return DecayFactor(math.log(mu_r))
 
 def force(
     v: Voltage,
-    mu_r: RelPermeability,
+    mu_r: RelativePermeability,
     awg: WireGauge,
     r_o: Radius,
     l: Length,
     N: Turns) -> Force:
-    """Compute force inside a solenoid in Newtons"""
-    wf          = winding_factor(awg, r_o, l, N)
-    alpha       = decay_factor(mu_r)
-    gamma       = res_per_length(awg)
-    numerator   = -(v ** 2) * mu_r * MU * wf * alpha
-    denominator = (8 * math.pi * (gamma ** 2) * (l ** 2))
+    """
+    Compute force inside a solenoid in Newtons
+
+    :param v:    Voltage
+    :param mu_r: Relative permeability of armature
+    :param awg:  Wire gauge
+    :param r_o:  Solenoid nominal radius in meters
+    :param l:    Solenoid length in meters
+    :param N:    Number of turns
+    """
+    mu : Permeability = Permeability(4 * math.pi * 1e-7)  # permeability of space/air
+    wf                = winding_factor(awg, r_o, l, N)
+    alpha             = decay_factor(mu_r)
+    gamma             = awg_resistance_per_length(awg)
+    numerator         = -(v ** 2) * mu_r * mu * wf * alpha
+    denominator       = (8 * math.pi * (gamma ** 2) * (l ** 2))
     return Force(numerator / denominator)
