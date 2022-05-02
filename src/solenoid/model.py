@@ -33,7 +33,6 @@ from solenoid.units import (
     DecayFactor,
     Force,
     Length,
-    Material,
     Permeability,
     Power,
     Radius,
@@ -46,7 +45,7 @@ from solenoid.units import (
     Efficiency,
 )
 
-def packing_density() -> float:
+def _packing_density() -> float:
     """
     Wire packing density
 
@@ -57,7 +56,7 @@ def packing_density() -> float:
     """
     return 0.7
 
-def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> Radius:
+def _average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> Radius:
     """
     Average solenoid radius, taking wire gauge into account
 
@@ -69,10 +68,10 @@ def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> Radius:
     lambda = packing density
     l      = solenoid length
     """
-    beta = awg_area(awg) / (2 * packing_density() * l)
+    beta = awg_area(awg) / (2 * _packing_density() * l)
     return Radius(beta * N + r_o)
 
-def winding_factor(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> WindingFactor:
+def _winding_factor(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> WindingFactor:
     """
     Compute winding factor
 
@@ -85,10 +84,10 @@ def winding_factor(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> WindingFacto
     wf = r_o^2 / r_a^2
     """
     numerator   = r_o ** 2
-    denominator = average_radius(awg, r_o, l, N) ** 2
+    denominator = _average_radius(awg, r_o, l, N) ** 2
     return WindingFactor(numerator / denominator)
 
-def decay_factor(mu_r:RelativePermeability) -> DecayFactor:
+def _decay_factor(mu_r:RelativePermeability) -> DecayFactor:
     """
     Compute decay factor
 
@@ -116,8 +115,8 @@ def force(
     :param N:    Number of turns
     """
     mu : Permeability = Permeability(4 * math.pi * 1e-7)  # permeability of space/air
-    wf                = winding_factor(awg, r_o, l, N)
-    alpha             = decay_factor(mu_r)
+    wf                = _winding_factor(awg, r_o, l, N)
+    alpha             = _decay_factor(mu_r)
     gamma             = awg_resistance_per_length(awg)
     numerator         = -(v ** 2) * mu_r * mu * wf * alpha
     denominator       = (8 * math.pi * (gamma ** 2) * (l ** 2))
@@ -133,9 +132,9 @@ def power(
     Compute solenoid power
     power = V^2 / R at DC
     """
-    r_a          = average_radius(awg, r_o, l, N)
+    r_a          = _average_radius(awg, r_o, l, N)
     total_length = Length(2 * r_a * math.pi * N)
-    resistance   = awg_resistance(awg, Material("copper"), Temperature(293), total_length)
+    resistance   = awg_resistance(awg, Temperature(293), total_length)
     return Power((v ** 2) / resistance)
 
 def efficiency(

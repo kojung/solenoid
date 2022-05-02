@@ -21,7 +21,6 @@ import math
 from solenoid.units import (
     Area,
     Length,
-    Material,
     Radius,
     Resistance,
     ResistancePerLength,
@@ -53,40 +52,16 @@ def awg_area(awg:WireGauge) -> Area:
 
 def awg_resistance_per_length(
     awg:WireGauge,
-    material:Material=Material("copper"),
     temp:Temperature=Temperature(293)) -> ResistancePerLength:
     """
     :param awg:       Wire AWG
-    :param material:  Wire material
     :param temp:      Temperature [K]
-    :return:          Resistance per unit length for the selected material at given temperature [Ohm/m]
-
-    Reference: http://www.endmemo.com/physics/resistt.php
+    :return:          Resistance per unit length for copper at given temperature [Ohm/m]
     """
-    coefficients = {
-        # material: (resistivity [ohm.m] at 293K, thermal coefficient [1/K])
-        "silver"     : (1.59e-8, 0.0038),
-        "copper"     : (1.68e-8, 0.0039),
-        "gold"       : (2.44e-8, 0.0034),
-        "aluminium"  : (2.82e-8, 0.0039),
-        "tungsten"   : (5.60e-8, 0.0045),
-        "zinc"       : (5.90e-8, 0.0037),
-        "nickel"     : (6.99e-8, 0.006),
-        "iron"       : (1.0e-7,  0.005),
-        "platinum"   : (1.06e-7, 0.00392),
-        "tin"        : (1.09e-7, 0.0045),
-        "lead"       : (2.2e-7,  0.0039),
-        "manganin"   : (4.82e-7, 0.000002),
-        "constantan" : (4.9e-7,  0.000008),
-        "mercury"    : (9.8e-7,  0.0009),
-        "nichrome"   : (1.10e-6, 0.0004),
-        "carbon"     : (3.5e-5, -0.0005),
-        "germanium"  : (4.6e-1, -0.048),
-        "silicon"    : (6.40e2, -0.075),
-    }
-
-    reference_temp      = 293  # 20C
-    resistivity, alpha  = coefficients[material]
+    # Reference: http://www.endmemo.com/physics/resistt.php
+    reference_temp      = 293      # 20C
+    resistivity         = 1.68e-8  # [ohm . m]
+    alpha               = 0.0039   # thermal coefficient [1/K]
     delta_t             = temp - reference_temp
     resistivity_at_temp = resistivity * (1 + alpha * delta_t)
     area                = awg_area(awg)
@@ -95,8 +70,7 @@ def awg_resistance_per_length(
 
 def awg_resistance(
     awg:WireGauge,
-    material:Material=Material("copper"),
     temp:Temperature=Temperature(293),
     length:Length=Length(1)) -> Resistance:
     """Wire resistance for given length"""
-    return Resistance(awg_resistance_per_length(awg, material, temp) * length)
+    return Resistance(awg_resistance_per_length(awg, temp) * length)
