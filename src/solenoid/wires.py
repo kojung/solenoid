@@ -19,11 +19,14 @@ AWG Wire properties
 import math
 
 from solenoid.units import (
-    WireGauge,
-    Radius,
     Area,
+    Length,
+    Material,
+    Radius,
+    Resistance,
     ResistancePerLength,
     Temperature,
+    WireGauge,
 )
 
 def awg_radius(awg:WireGauge) -> Radius:
@@ -89,3 +92,11 @@ def awg_resistance_per_length(
     area                = awg_area(awg)
 
     return ResistancePerLength(resistivity_at_temp / area)
+
+def awg_resistance(
+    awg:WireGauge,
+    material:str="copper",
+    temp:Temperature=Temperature(293),
+    length:Length=1) -> Resistance:
+    """Wire resistance for given length"""
+    return Resistance(awg_resistance_per_length(awg, material, temp) * length)

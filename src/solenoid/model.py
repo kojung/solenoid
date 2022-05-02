@@ -27,6 +27,7 @@ import math
 from solenoid.wires import (
     awg_area,
     awg_resistance_per_length,
+    awg_resistance,
 )
 from solenoid.units import (
     DecayFactor,
@@ -39,6 +40,7 @@ from solenoid.units import (
     WindingFactor,
     WireGauge,
     Turns,
+    Power,
 )
 
 def packing_density() -> float:
@@ -52,7 +54,22 @@ def packing_density() -> float:
     """
     return 0.7
 
-def winding_factor(awg: WireGauge, r_o: Radius, l: Length, N: Turns) -> WindingFactor:
+def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> Radius:
+    """
+    Average solenoid radius, taking wire gauge into account
+
+    :param awg: Wire gauge
+
+    r_a    = beta * N + r_0
+    beta   = a / (2 * lambda * l)
+    a      = wire cross section
+    lambda = packing density
+    l      = solenoid length
+    """
+    beta = awg_area(awg) / (2 * packing_density() * l)
+    return beta * N + r_o
+
+def winding_factor(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> WindingFactor:
     """
     Compute winding factor
 
@@ -61,13 +78,14 @@ def winding_factor(awg: WireGauge, r_o: Radius, l: Length, N: Turns) -> WindingF
     :param l:   Solenoid length in meters
     :param N:   Number of turns
     :return:    Winding factor
+
+    wf = r_o^2 / r_a^2
     """
     numerator   = r_o ** 2
-    beta        = awg_area(awg) / (2 * packing_density() * l)
-    denominator = (beta * N + r_o) ** 2
+    denominator = average_radius(awg, r_o, l, N) ** 2
     return WindingFactor(numerator / denominator)
 
-def decay_factor(mu_r: RelativePermeability) -> DecayFactor:
+def decay_factor(mu_r:RelativePermeability) -> DecayFactor:
     """
     Compute decay factor
 
@@ -78,12 +96,12 @@ def decay_factor(mu_r: RelativePermeability) -> DecayFactor:
     return DecayFactor(math.log(mu_r))
 
 def force(
-    v: Voltage,
-    mu_r: RelativePermeability,
-    awg: WireGauge,
-    r_o: Radius,
-    l: Length,
-    N: Turns) -> Force:
+    v:Voltage,
+    mu_r:RelativePermeability,
+    awg:WireGauge,
+    r_o:Radius,
+    l:Length,
+    N:Turns) -> Force:
     """
     Compute force inside a solenoid in Newtons
 
@@ -101,3 +119,18 @@ def force(
     numerator         = -(v ** 2) * mu_r * mu * wf * alpha
     denominator       = (8 * math.pi * (gamma ** 2) * (l ** 2))
     return Force(numerator / denominator)
+
+def power(
+    v:Voltage,
+    awg:WireGauge,
+    r_o:Radius,
+    l:Length,
+    N:Turns) -> Power:
+    """
+    Compute solenoid power
+    power = V^2 / R at DC
+    """
+    r_a          = average_radius(awg, r_o, l, N)
+    total_length = 2 * r_a * math.pi * N
+    resistance   = awg_resistance(awg, "copper", 293, total_length)
+    return Power((v ** 2) / resistance)
