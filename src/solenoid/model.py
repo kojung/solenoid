@@ -33,14 +33,16 @@ from solenoid.units import (
     DecayFactor,
     Force,
     Length,
+    Material,
     Permeability,
+    Power,
     Radius,
     RelativePermeability,
+    Temperature,
+    Turns,
     Voltage,
     WindingFactor,
     WireGauge,
-    Turns,
-    Power,
 )
 
 def packing_density() -> float:
@@ -67,7 +69,7 @@ def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> Radius:
     l      = solenoid length
     """
     beta = awg_area(awg) / (2 * packing_density() * l)
-    return beta * N + r_o
+    return Radius(beta * N + r_o)
 
 def winding_factor(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> WindingFactor:
     """
@@ -131,6 +133,6 @@ def power(
     power = V^2 / R at DC
     """
     r_a          = average_radius(awg, r_o, l, N)
-    total_length = 2 * r_a * math.pi * N
-    resistance   = awg_resistance(awg, "copper", 293, total_length)
+    total_length = Length(2 * r_a * math.pi * N)
+    resistance   = awg_resistance(awg, Material("copper"), Temperature(293), total_length)
     return Power((v ** 2) / resistance)

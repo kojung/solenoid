@@ -53,7 +53,7 @@ def awg_area(awg:WireGauge) -> Area:
 
 def awg_resistance_per_length(
     awg:WireGauge,
-    material:str="copper",
+    material:Material=Material("copper"),
     temp:Temperature=Temperature(293)) -> ResistancePerLength:
     """
     :param awg:       Wire AWG
@@ -95,8 +95,8 @@ def awg_resistance_per_length(
 
 def awg_resistance(
     awg:WireGauge,
-    material:str="copper",
+    material:Material=Material("copper"),
     temp:Temperature=Temperature(293),
-    length:Length=1) -> Resistance:
+    length:Length=Length(1)) -> Resistance:
     """Wire resistance for given length"""
     return Resistance(awg_resistance_per_length(awg, material, temp) * length)
