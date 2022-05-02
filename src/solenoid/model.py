@@ -30,6 +30,7 @@ from solenoid.wires import (
     awg_resistance,
 )
 from solenoid.units import (
+    Current,
     DecayFactor,
     Force,
     Length,
@@ -37,7 +38,6 @@ from solenoid.units import (
     Power,
     Radius,
     RelativePermeability,
-    Temperature,
     Turns,
     Voltage,
     WindingFactor,
@@ -61,6 +61,10 @@ def _average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns) -> Radius:
     Average solenoid radius, taking wire gauge into account
 
     :param awg: Wire gauge
+    :param r_o: Solenoid nominal radius in meters
+    :param l:   Solenoid length in meters
+    :param N:   Number of turns
+    :return:    Average solenoid radius
 
     r_a    = beta * N + r_0
     beta   = a / (2 * lambda * l)
@@ -91,6 +95,8 @@ def _decay_factor(mu_r:RelativePermeability) -> DecayFactor:
     """
     Compute decay factor
 
+    :param mu_r: Relative permeability of armature
+
     Model solenoid force along the axis as an exponential decaying
     function. The decay factor expresses how fast the solenoid force
     becomes 0 as the armature exits the solenoid.
@@ -113,6 +119,7 @@ def force(
     :param r_o:  Solenoid nominal radius in meters
     :param l:    Solenoid length in meters
     :param N:    Number of turns
+    :return:     Solenoid force when armature is fully inside solenoid in Newtons
     """
     mu : Permeability = Permeability(4 * math.pi * 1e-7)  # permeability of space/air
     wf                = _winding_factor(awg, r_o, l, N)
@@ -122,6 +129,27 @@ def force(
     denominator       = (8 * math.pi * (gamma ** 2) * (l ** 2))
     return Force(numerator / denominator)
 
+def current(
+    v:Voltage,
+    awg:WireGauge,
+    r_o:Radius,
+    l:Length,
+    N:Turns) -> Current:
+    """
+    Compute solenoid current at DC in Amps
+
+    :param v:    Solenoid voltage
+    :param awg:  Wire gauge
+    :param r_o:  Solenoid nominal radius in meters
+    :param l:    Solenoid length in meters
+    :param N:    Number of turns
+    :return:     Solenoid current in Amps
+    """
+    r_a          = _average_radius(awg, r_o, l, N)
+    total_length = Length(2 * r_a * math.pi * N)
+    resistance   = awg_resistance(awg, total_length)
+    return Current(v/resistance)
+
 def power(
     v:Voltage,
     awg:WireGauge,
@@ -130,12 +158,18 @@ def power(
     N:Turns) -> Power:
     """
     Compute solenoid power
+
+    :param v:    Solenoid voltage
+    :param awg:  Wire gauge
+    :param r_o:  Solenoid nominal radius in meters
+    :param l:    Solenoid length in meters
+    :param N:    Number of turns
+    :return:     Solenoid power in Watts
+
     power = V^2 / R at DC
     """
-    r_a          = _average_radius(awg, r_o, l, N)
-    total_length = Length(2 * r_a * math.pi * N)
-    resistance   = awg_resistance(awg, Temperature(293), total_length)
-    return Power((v ** 2) / resistance)
+    i = current(v, awg, r_o, l, N)
+    return Power(v * i)
 
 def efficiency(
     v:Voltage,
@@ -146,6 +180,13 @@ def efficiency(
     N:Turns) -> Efficiency:
     """
     Compute solenoid efficiency.
+
+    :param v:    Solenoid voltage
+    :param awg:  Wire gauge
+    :param r_o:  Solenoid nominal radius in meters
+    :param l:    Solenoid length in meters
+    :param N:    Number of turns
+    :return:     Solenoid efficiency in Newton/Watt
 
     Efficiency is defined as force/power in Newton/Watt
     """

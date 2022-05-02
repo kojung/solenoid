@@ -14,7 +14,7 @@
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-AWG Wire properties
+AWG Copper Wire properties
 """
 import math
 
@@ -70,7 +70,7 @@ def awg_resistance_per_length(
 
 def awg_resistance(
     awg:WireGauge,
-    temp:Temperature=Temperature(293),
-    length:Length=Length(1)) -> Resistance:
+    length:Length=Length(1),
+    temp:Temperature=Temperature(293)) -> Resistance:
     """Wire resistance for given length"""
     return Resistance(awg_resistance_per_length(awg, temp) * length)
