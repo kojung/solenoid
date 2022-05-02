@@ -43,6 +43,7 @@ from solenoid.units import (
     Voltage,
     WindingFactor,
     WireGauge,
+    Efficiency,
 )
 
 def packing_density() -> float:
@@ -136,3 +137,19 @@ def power(
     total_length = Length(2 * r_a * math.pi * N)
     resistance   = awg_resistance(awg, Material("copper"), Temperature(293), total_length)
     return Power((v ** 2) / resistance)
+
+def efficiency(
+    v:Voltage,
+    mu_r:RelativePermeability,
+    awg:WireGauge,
+    r_o:Radius,
+    l:Length,
+    N:Turns) -> Efficiency:
+    """
+    Compute solenoid efficiency.
+
+    Efficiency is defined as force/power in Newton/Watt
+    """
+    newton = force(v, mu_r, awg, r_o, l, N)
+    watt   = power(v, awg, r_o, l, N)
+    return Efficiency(newton/watt)
