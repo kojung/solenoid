@@ -20,6 +20,7 @@ Type aliases for different units. Used for typechecking.
 from typing import NewType
 
 # Type aliases for typecheck
+# All types are assumed to be in SI units
 Area                 = NewType('Area',                 float)
 DecayFactor          = NewType('DecayFactor',          float)
 Force                = NewType('Force',                float)
