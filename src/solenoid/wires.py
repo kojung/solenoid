@@ -80,21 +80,21 @@ def awg_resistance(
 
 class TestWires(TestCase):
     """Unit tests"""
-    def test_radius(self):
+    def test_radius(self) -> None:
         """Test awg_radius"""
         self.assertAlmostEqual(awg_radius(WireGauge(0)),  8.25246 / 1000 / 2, places=5)
         self.assertAlmostEqual(awg_radius(WireGauge(10)), 2.58826 / 1000 / 2, places=5)
         self.assertAlmostEqual(awg_radius(WireGauge(20)), 0.81280 / 1000 / 2, places=5)
         self.assertAlmostEqual(awg_radius(WireGauge(30)), 0.25400 / 1000 / 2, places=5)
 
-    def test_area(self):
+    def test_area(self) -> None:
         """Test awg_area"""
         self.assertAlmostEqual(awg_area(WireGauge(1)),  42.46  / 1e6, places=5)
         self.assertAlmostEqual(awg_area(WireGauge(11)), 4.17   / 1e6, places=5)
         self.assertAlmostEqual(awg_area(WireGauge(21)), 0.412  / 1e6, places=5)
         self.assertAlmostEqual(awg_area(WireGauge(31)), 0.0401 / 1e6, places=5)
 
-    def test_resistance(self):
+    def test_resistance(self) -> None:
         """Test awg_resistance"""
         self.assertAlmostEqual(awg_resistance(WireGauge(2),  Length(1000)), 0.49954,   places=4)
         self.assertAlmostEqual(awg_resistance(WireGauge(12), Length(1000)), 5.07741,   places=4)
