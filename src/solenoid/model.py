@@ -228,11 +228,11 @@ class TestModel(TestCase):
         r_a = average_radius(awg, r_o, l, N, d)
         self.assertAlmostEqual(r_a, 4.5 / 1000, places=4)
 
-    # def test_resistance(self):
-    #     """Test awg_radius"""
-    #     # Figure 6a of [1]
-    #     l   = Length(27 / 1000)   # 27mm
-    #     r_o = Radius(2.3 / 1000)  # 2.3mm
-    #     awg = WireGauge(30)
-    #     N   = Turns(572)
-    #     self.assertAlmostEqual(resistance(awg, r_o, l, N), 5.3)
+    def test_resistance(self):
+        """Test awg_radius"""
+        # Figure 6a of [1]
+        l   = Length(27 / 1000)   # 27mm
+        r_o = Radius(2.3 / 1000)  # 2.3mm
+        awg = WireGauge(30)
+        N   = Turns(572)
+        self.assertAlmostEqual(resistance(awg, r_o, l, N), 5.3)
