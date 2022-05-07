@@ -24,6 +24,7 @@ Int. J. on Recent Trends in Engineering and Technology, Vol. 8, No. 2, Jan 2013
 
 import math
 from unittest import TestCase
+from icecream import ic
 
 from solenoid.wires import (
     awg_area,
@@ -47,6 +48,9 @@ from solenoid.units import (
     WireGauge,
     PackingDensity,
 )
+
+# disable debugging by default
+ic.disable()
 
 def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns, d:PackingDensity) -> Radius:
     """
@@ -96,6 +100,7 @@ def _decay_factor(mu_r:RelativePermeability) -> DecayFactor:
     function. The decay factor expresses how fast the solenoid force
     becomes 0 as the armature exits the solenoid.
     """
+    assert mu_r > 1, f"Relative permeability must be > 1, got {mu_r}"
     return DecayFactor(math.log(mu_r))
 
 def force(
@@ -118,13 +123,16 @@ def force(
     :param d:    Packing density
     :return:     Solenoid force when armature is fully inside solenoid in Newtons
     """
-    mu : Permeability = Permeability(4 * math.pi * 1e-7)  # permeability of space/air
-    wf                = _winding_factor(awg, r_o, l, N, d)
-    alpha             = _decay_factor(mu_r)
-    gamma             = awg_resistance_per_length(awg)
-    numerator         = -(v ** 2) * mu_r * mu * wf * alpha
-    denominator       = (8 * math.pi * (gamma ** 2) * (l ** 2))
-    return Force(numerator / denominator)
+    # ic.enable()
+    mu : Permeability = ic(Permeability(4 * math.pi * 1e-7))  # permeability of space/air
+    wf                = ic(_winding_factor(awg, r_o, l, N, d))
+    alpha             = ic(_decay_factor(mu_r))
+    gamma             = ic(awg_resistance_per_length(awg))
+    numerator         = ic(-(v ** 2) * mu_r * mu * wf * alpha)
+    denominator       = ic(-(8 * math.pi * (gamma ** 2) * (l ** 2)))
+    newtons           = ic(numerator / denominator)
+    ic.disable()
+    return Force(newtons)
 
 def resistance(
     awg:WireGauge,
@@ -228,12 +236,35 @@ class TestModel(TestCase):
         r_a = average_radius(awg, r_o, l, N, d)
         self.assertAlmostEqual(r_a, 4.5 / 1000, places=4)
 
-    def test_resistance(self):
+    def test_resistance(self) -> None:
         """Test awg_radius"""
         # Figure 6a of [1]
-        d   = PackingDensity(0.48) # reverse-engineered value
-        l   = Length(27 / 1000)   # 27mm
-        r_o = Radius(2.3 / 1000)  # 2.3mm
+        d   = PackingDensity(0.48) # reverse-engineered value (P=40W, R=5.3ohms)
+        l   = Length(27 / 1000)    # 27mm
+        r_o = Radius(2.3 / 1000)   # 2.3mm
         awg = WireGauge(30)
         N   = Turns(572)
         self.assertAlmostEqual(resistance(awg, r_o, l, N, d), 5.3, delta=0.1)
+
+    def test_force(self) -> None:
+        """Test solenoid force"""
+        # Figure 6a of [1]
+        v    = Voltage(14.56)             # reverse-engineered value (P = 40W, R = 5.3ohms)
+        mu_r = RelativePermeability(51)   # assume ferrite?
+        d    = PackingDensity(0.48)       # reverse-engineered value (P = 40W, R = 5.3ohms)
+        l    = Length(27 / 1000)          # 27mm
+        r_o  = Radius(2.3 / 1000)         # 2.3mm
+        awg  = WireGauge(30)
+        N    = Turns(572)
+        self.assertAlmostEqual(force(v, mu_r, awg, r_o, l, N, d), 6.8, delta=0.1)
+
+    def test_power(self) -> None:
+        """Test solenoid power"""
+        # Figure 6a of [1]
+        v    = Voltage(14.56)             # reverse-engineered value (P = 40W, R = 5.3ohms)
+        d    = PackingDensity(0.48)       # reverse-engineered value (P = 40W, R = 5.3ohms)
+        l    = Length(27 / 1000)          # 27mm
+        r_o  = Radius(2.3 / 1000)         # 2.3mm
+        awg  = WireGauge(30)
+        N    = Turns(572)
+        self.assertAlmostEqual(power(v, awg, r_o, l, N, d), 40, delta=1)
