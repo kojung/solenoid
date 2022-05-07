@@ -231,8 +231,9 @@ class TestModel(TestCase):
     def test_resistance(self):
         """Test awg_radius"""
         # Figure 6a of [1]
+        d   = PackingDensity(0.48) # reverse-engineered value
         l   = Length(27 / 1000)   # 27mm
         r_o = Radius(2.3 / 1000)  # 2.3mm
         awg = WireGauge(30)
         N   = Turns(572)
-        self.assertAlmostEqual(resistance(awg, r_o, l, N), 5.3)
+        self.assertAlmostEqual(resistance(awg, r_o, l, N, d), 5.3, delta=0.1)
