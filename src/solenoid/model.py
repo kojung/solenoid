@@ -69,7 +69,7 @@ def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns, d:PackingDensit
     lambda = packing density
     l      = solenoid length
     """
-    beta = awg_area(awg) / (d * l)
+    beta = awg_area(awg) / (2 * d * l)
     return Radius(beta * N + r_o)
 
 def _winding_factor(
@@ -228,30 +228,30 @@ class TestModel(TestCase):
     def test_average_radius(self) -> None:
         """Test awg_radius"""
         # Figure 6a of [1]
-        d   = PackingDensity(0.48) # reverse-engineered value
+        d   = PackingDensity(0.25) # reverse-engineered value
         l   = Length(27 / 1000)    # 27mm
         r_o = Radius(2.3 / 1000)   # 2.3mm
         awg = WireGauge(30)
         N   = Turns(572)
         r_a = average_radius(awg, r_o, l, N, d)
-        self.assertAlmostEqual(r_a, 4.5 / 1000, places=4)
+        self.assertAlmostEqual(r_a, 4.4 / 1000, delta=0.0001)
 
     def test_resistance(self) -> None:
         """Test awg_radius"""
         # Figure 6a of [1]
-        d   = PackingDensity(0.48) # reverse-engineered value (P=40W, R=5.3ohms)
+        d   = PackingDensity(0.25) # reverse-engineered value
         l   = Length(27 / 1000)    # 27mm
         r_o = Radius(2.3 / 1000)   # 2.3mm
         awg = WireGauge(30)
         N   = Turns(572)
-        self.assertAlmostEqual(resistance(awg, r_o, l, N, d), 5.3, delta=0.1)
+        self.assertAlmostEqual(resistance(awg, r_o, l, N, d), 5.3, delta=0.05)
 
     def test_force(self) -> None:
         """Test solenoid force"""
         # Figure 6a of [1]
-        v    = Voltage(14.56)             # reverse-engineered value (P = 40W, R = 5.3ohms)
-        mu_r = RelativePermeability(51)   # assume ferrite?
-        d    = PackingDensity(0.48)       # reverse-engineered value (P = 40W, R = 5.3ohms)
+        v    = Voltage(4.3)               # reverse-engineered value
+        mu_r = RelativePermeability(375)  # from Paul's email
+        d    = PackingDensity(0.25)       # reverse-engineered value
         l    = Length(27 / 1000)          # 27mm
         r_o  = Radius(2.3 / 1000)         # 2.3mm
         awg  = WireGauge(30)
@@ -261,10 +261,10 @@ class TestModel(TestCase):
     def test_power(self) -> None:
         """Test solenoid power"""
         # Figure 6a of [1]
-        v    = Voltage(14.56)             # reverse-engineered value (P = 40W, R = 5.3ohms)
-        d    = PackingDensity(0.48)       # reverse-engineered value (P = 40W, R = 5.3ohms)
+        v    = Voltage(4.3)               # reverse-engineered value
+        d    = PackingDensity(0.25)       # reverse-engineered value
         l    = Length(27 / 1000)          # 27mm
         r_o  = Radius(2.3 / 1000)         # 2.3mm
         awg  = WireGauge(30)
         N    = Turns(572)
-        self.assertAlmostEqual(power(v, awg, r_o, l, N, d), 40, delta=1)
+        self.assertAlmostEqual(power(v, awg, r_o, l, N, d), 4, delta=0.51)
