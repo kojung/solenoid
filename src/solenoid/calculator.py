@@ -21,15 +21,22 @@ Solenoid calculator
 """
 
 import argparse
+from typing import List, Tuple, Any
+
 import matplotlib.pyplot as plt
 import numpy as np
 
+from solenoid.units import (
+    Current,
+    Force,
+    Power,
+    Efficiency,
+)
 from solenoid.model import (
      force,
-#     current,
-#     resistance,
-#     power,
-#     efficiency,
+     current,
+     power,
+     efficiency,
 )
 
 def parse_args():
@@ -68,11 +75,10 @@ Range parameters are specified as a start/end tuple.
     return parser.parse_args()
 
 # pylint: disable=too-many-locals
-def compute_force(args, range_param):
+def compute_force(args, range_param) -> Tuple[Any, List[Force]]:
     """return force vs. range parameter"""
     range_name, _, (range_start, range_end) = range_param
     x = np.linspace(range_start, range_end, 30)
-    print(f"Computing 'force' vs '{range_name}' from '{range_start}' to '{range_end}'")
     y = []
     for val in x:
         voltage               = val if range_name == "Voltage"               else args.voltage[0]
@@ -92,6 +98,80 @@ def compute_force(args, range_param):
             d=packing_density,
         )
         y.append(f)
+    return (x, y)
+
+# pylint: disable=too-many-locals
+def compute_current(args, range_param) -> Tuple[Any, List[Current]]:
+    """return current vs. range parameter"""
+    range_name, _, (range_start, range_end) = range_param
+    x = np.linspace(range_start, range_end, 30)
+    y = []
+    for val in x:
+        voltage               = val if range_name == "Voltage"               else args.voltage[0]
+        length                = val if range_name == "Length"                else args.length[0]
+        radius                = val if range_name == "Radius"                else args.radius[0]
+        awg                   = val if range_name == "Awg"                   else args.awg[0]
+        turns                 = val if range_name == "Turns"                 else args.turns[0]
+        packing_density       = val if range_name == "Packing Density"       else args.packing_density[0]
+        c = current(
+            v=voltage,
+            awg=awg,
+            r_o=radius,
+            l=length,
+            N=turns,
+            d=packing_density,
+        )
+        y.append(c)
+    return (x, y)
+
+# pylint: disable=too-many-locals
+def compute_power(args, range_param) -> Tuple[Any, List[Power]]:
+    """return power vs. range parameter"""
+    range_name, _, (range_start, range_end) = range_param
+    x = np.linspace(range_start, range_end, 30)
+    y = []
+    for val in x:
+        voltage               = val if range_name == "Voltage"               else args.voltage[0]
+        length                = val if range_name == "Length"                else args.length[0]
+        radius                = val if range_name == "Radius"                else args.radius[0]
+        awg                   = val if range_name == "Awg"                   else args.awg[0]
+        turns                 = val if range_name == "Turns"                 else args.turns[0]
+        packing_density       = val if range_name == "Packing Density"       else args.packing_density[0]
+        p = power(
+            v=voltage,
+            awg=awg,
+            r_o=radius,
+            l=length,
+            N=turns,
+            d=packing_density,
+        )
+        y.append(p)
+    return (x, y)
+
+# pylint: disable=too-many-locals
+def compute_efficiency(args, range_param) -> Tuple[Any, List[Efficiency]]:
+    """return efficiency vs. range parameter"""
+    range_name, _, (range_start, range_end) = range_param
+    x = np.linspace(range_start, range_end, 30)
+    y = []
+    for val in x:
+        voltage               = val if range_name == "Voltage"               else args.voltage[0]
+        length                = val if range_name == "Length"                else args.length[0]
+        radius                = val if range_name == "Radius"                else args.radius[0]
+        awg                   = val if range_name == "Awg"                   else args.awg[0]
+        turns                 = val if range_name == "Turns"                 else args.turns[0]
+        packing_density       = val if range_name == "Packing Density"       else args.packing_density[0]
+        relative_permeability = val if range_name == "Relative Permeability" else args.relative_permeability[0]
+        e = efficiency(
+            v=voltage,
+            mu_r=relative_permeability,
+            awg=awg,
+            r_o=radius,
+            l=length,
+            N=turns,
+            d=packing_density,
+        )
+        y.append(e)
     return (x, y)
 
 def main():
@@ -118,15 +198,43 @@ def main():
                 raise ValueError(f"Both parameters '{name}' and '{range_param[0]}' specified as range")
     assert range_param != (None, "", 0), "At least one parameter should be a range"
 
-    x, y = compute_force(args, range_param)
+    fig = plt.figure()
+    ax  = fig.add_subplot(111)  # big subplot
+    ax1 = fig.add_subplot(411)
+    ax2 = fig.add_subplot(412)
+    ax3 = fig.add_subplot(413)
+    ax4 = fig.add_subplot(414)
 
-    _, ax = plt.subplots()
-    ax.plot(x,y)
-    ax.set_ylabel("Force [N]")
+    # Turn off axis lines and ticks of the big subplot
+    ax.spines['top'].set_color('none')
+    ax.spines['bottom'].set_color('none')
+    ax.spines['left'].set_color('none')
+    ax.spines['right'].set_color('none')
+    ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+
+    # force
+    x, y = compute_force(args, range_param)
+    ax1.plot(x,y)
+    ax1.set_ylabel("Force [N]")
+
+    # current
+    x, y = compute_current(args, range_param)
+    ax2.plot(x,y)
+    ax2.set_ylabel("Current [A]")
+
+    # power
+    x, y = compute_power(args, range_param)
+    ax3.plot(x,y)
+    ax3.set_ylabel("Power [W]")
+
+    # efficiency
+    x, y = compute_efficiency(args, range_param)
+    ax4.plot(x,y)
+    ax4.set_ylabel("Efficiency")
+
+    # toplevel
     ax.set_xlabel(f"{range_param[0]} {range_param[1]}")
     plt.show()
-
-    print("end")
 
 if __name__ == "__main__":
     main()
