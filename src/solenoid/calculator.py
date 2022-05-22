@@ -73,7 +73,7 @@ Range parameters are specified as a start/end tuple.
         help="Relative permeability (scalar)")
     parser.add_argument("-d", "--packing_density", nargs="+", type=float, required=True,
         help="Packing density")
-    parser.add_argument("--width", type=float, default=8,
+    parser.add_argument("--width", type=float, default=10,
         help="Figure width in inches")
     parser.add_argument("--height", type=float, default=10,
         help="Figure height in inches")
