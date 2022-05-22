@@ -221,7 +221,7 @@ def main():
     # current limit depends on wire gauge only
     if range_name == "Awg":
         # variable current limit
-        current_limit = np.array(map(awg_current_limit, domain))
+        current_limit = np.array([awg_current_limit(x) for x in domain])
     else:
         # fixed current limit
         current_limit = np.array([awg_current_limit(args.awg[0])] * len(domain))
