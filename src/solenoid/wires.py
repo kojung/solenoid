@@ -23,6 +23,7 @@ from unittest import TestCase
 
 from solenoid.units import (
     Area,
+    Current,
     Length,
     Radius,
     Resistance,
@@ -78,6 +79,14 @@ def awg_resistance(
     """Wire resistance for given length"""
     return Resistance(awg_resistance_per_length(awg, temp) * length)
 
+def awg_current_limit(awg:WireGauge) -> Current:
+    """
+    Return current limit for the given wire gauge
+    Allow 2.5 amps per mm^2
+    """
+    area_mm_2 = awg_area(awg) * 1e6
+    return Current(area_mm_2 * 3)
+
 class TestWires(TestCase):
     """Unit tests"""
     def test_radius(self) -> None:
@@ -100,3 +109,9 @@ class TestWires(TestCase):
         self.assertAlmostEqual(awg_resistance(WireGauge(12), Length(1000)), 5.07741,   places=4)
         self.assertAlmostEqual(awg_resistance(WireGauge(22), Length(1000)), 51.607521, places=4)
         self.assertAlmostEqual(awg_resistance(WireGauge(32), Length(1000)), 524.54612, places=4)
+
+    def test_current_limit(self) -> None:
+        """Test awg_current_limit"""
+        self.assertAlmostEqual(awg_current_limit(WireGauge(2)),  100.89, places=2)
+        self.assertAlmostEqual(awg_current_limit(WireGauge(10)),  15.78, places=2)
+        self.assertAlmostEqual(awg_current_limit(WireGauge(20)),  1.55,  places=2)
