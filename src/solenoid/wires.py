@@ -23,6 +23,7 @@ from unittest import TestCase
 
 from solenoid.units import (
     Area,
+    Current,
     Length,
     Radius,
     Resistance,
@@ -77,6 +78,11 @@ def awg_resistance(
     temp:Temperature=Temperature(293)) -> Resistance:
     """Wire resistance for given length"""
     return Resistance(awg_resistance_per_length(awg, temp) * length)
+
+def awg_current_limit(awg:WireGauge) -> Current:
+    """Return current limit for the given wire gauge"""
+    # WIP
+    return 0.1 * awg
 
 class TestWires(TestCase):
     """Unit tests"""

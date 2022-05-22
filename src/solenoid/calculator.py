@@ -39,6 +39,9 @@ from solenoid.model import (
      power,
      efficiency,
 )
+from solenoid.wires import (
+    awg_current_limit
+)
 
 def parse_args():
     """Parse command line args"""
@@ -181,6 +184,7 @@ def compute_efficiency(args, range_param) -> Tuple[Any, List[Efficiency]]:
         y.append(e)
     return (x, y)
 
+# pylint: disable=too-many-statements
 def main():
     """main program"""
     args = parse_args()
@@ -211,6 +215,25 @@ def main():
 
     assert range_param != (None, "", 0), "At least one parameter should be a range"
 
+    range_name, _, (range_start, range_end) = range_param
+    domain = np.linspace(range_start, range_end, 30)
+
+    # current limit depends on wire gauge only
+    if range_name == "Awg":
+        # variable current limit
+        current_limit = np.array(map(awg_current_limit, domain))
+    else:
+        # fixed current limit
+        current_limit = np.array([awg_current_limit(args.awg[0])] * len(domain))
+
+    # power limit depends on voltage and wire gauge
+    if range_name == "Voltage":
+        # fixed current limit, variable voltage
+        power_limit = current_limit * domain
+    else:
+        # variable current limit, fixed voltage
+        power_limit = current_limit * args.voltage[0]
+
     fig = plt.figure(figsize=(args.width, args.height), dpi=args.dpi)
 
     ax  = fig.add_subplot(511)  # legend
@@ -237,11 +260,14 @@ def main():
     # current
     x, y = compute_current(args, range_param)
     ax2.plot(x,y)
+    ax2.plot(x, current_limit, color='red')
     ax2.set_ylabel("Current [A]")
 
     # power
     x, y = compute_power(args, range_param)
+    power_limit = current_limit * args.voltage[0]
     ax3.plot(x,y)
+    ax3.plot(x, power_limit, color='red')
     ax3.set_ylabel("Power [W]")
 
     # efficiency
