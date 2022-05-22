@@ -260,14 +260,14 @@ def main():
     # current
     x, y = compute_current(args, range_param)
     ax2.plot(x,y)
-    ax2.plot(x, current_limit, color='red')
+    ax2.plot(x, current_limit, '--', color='red')
     ax2.set_ylabel("Current [A]")
 
     # power
     x, y = compute_power(args, range_param)
     power_limit = current_limit * args.voltage[0]
     ax3.plot(x,y)
-    ax3.plot(x, power_limit, color='red')
+    ax3.plot(x, power_limit, '--', color='red')
     ax3.set_ylabel("Power [W]")
 
     # efficiency
