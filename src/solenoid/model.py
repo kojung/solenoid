@@ -24,6 +24,8 @@ Int. J. on Recent Trends in Engineering and Technology, Vol. 8, No. 2, Jan 2013
 
 import math
 from unittest import TestCase
+from typing import Optional
+
 from icecream import ic
 
 from solenoid.wires import (
@@ -52,6 +54,30 @@ from solenoid.units import (
 # disable debugging by default
 ic.disable()
 
+def check_values(
+    v:Optional[Voltage]=None,
+    mu_r:Optional[RelativePermeability]=None,
+    awg:Optional[WireGauge]=None,
+    r_o:Optional[Radius]=None,
+    l:Optional[Length]=None,
+    N:Optional[Turns]=None,
+    d:Optional[PackingDensity]=None) -> None:
+    """Check values ranges"""
+    if awg:
+        assert 40 >= awg >= 0, f"Wire gauge must be between 0 .. 40, got {awg}"
+    if v:
+        assert v > 0, f"Voltage must be > 0, got {v}"
+    if d:
+        assert d > 0, f"Packing density must be > 0, got {d}"
+    if l:
+        assert l > 0, f"Length must be > 0, got {l}"
+    if mu_r:
+        assert mu_r > 1, f"Relative permeability must be > 1, got {mu_r}"
+    if N:
+        assert N > 0, f"Number of turns must be > 0, got {N}"
+    if r_o:
+        assert r_o > 0, f"Internal radius must be > 0, got {r_o}"
+
 def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns, d:PackingDensity) -> Radius:
     """
     Average solenoid radius, taking wire gauge into account
@@ -69,6 +95,7 @@ def average_radius(awg:WireGauge, r_o:Radius, l:Length, N:Turns, d:PackingDensit
     lambda = packing density
     l      = solenoid length
     """
+    check_values(awg=awg, r_o=r_o, l=l, N=N, d=d)
     beta = awg_area(awg) / (2 * d * l)
     return Radius(beta * N + r_o)
 
@@ -86,6 +113,7 @@ def _winding_factor(
 
     wf = r_o^2 / r_a^2
     """
+    check_values(awg=awg, r_o=r_o, l=l, N=N, d=d)
     numerator   = r_o ** 2
     denominator = average_radius(awg, r_o, l, N, d) ** 2
     return WindingFactor(numerator / denominator)
@@ -100,7 +128,7 @@ def _decay_factor(mu_r:RelativePermeability) -> DecayFactor:
     function. The decay factor expresses how fast the solenoid force
     becomes 0 as the armature exits the solenoid.
     """
-    assert mu_r > 1, f"Relative permeability must be > 1, got {mu_r}"
+    check_values(mu_r=mu_r)
     return DecayFactor(math.log(mu_r))
 
 def force(
@@ -123,6 +151,7 @@ def force(
     :param d:    Packing density
     :return:     Solenoid force when armature is fully inside solenoid in Newtons
     """
+    check_values(v=v, mu_r=mu_r, awg=awg, r_o=r_o, l=l, N=N, d=d)
     # ic.enable()
     mu : Permeability = ic(Permeability(4 * math.pi * 1e-7))  # permeability of space/air
     wf                = ic(_winding_factor(awg, r_o, l, N, d))
@@ -150,6 +179,7 @@ def resistance(
     :param d:    Wire packing density
     :return:     Solenoid resistance in ohms
     """
+    check_values(awg=awg, r_o=r_o, l=l, N=N, d=d)
     r_a          = average_radius(awg, r_o, l, N, d)
     total_length = Length(2 * r_a * math.pi * N)
     return awg_resistance(awg, total_length)
@@ -172,6 +202,7 @@ def current(
     :param d:    Wire packing density
     :return:     Solenoid current in Amps
     """
+    check_values(v=v, awg=awg, r_o=r_o, l=l, N=N, d=d)
     res = resistance(awg, r_o, l, N, d)
     return Current(v/res)
 
@@ -195,6 +226,7 @@ def power(
 
     power = V^2 / R at DC
     """
+    check_values(v=v, awg=awg, r_o=r_o, l=l, N=N, d=d)
     i = current(v, awg, r_o, l, N, d)
     return Power(v * i)
 
@@ -219,6 +251,7 @@ def efficiency(
 
     Efficiency is defined as force/power in Newton/Watt
     """
+    check_values(v=v, awg=awg, r_o=r_o, l=l, N=N, d=d)
     newton = force(v, mu_r, awg, r_o, l, N, d)
     watt   = power(v, awg, r_o, l, N, d)
     return Efficiency(newton/watt)

@@ -230,10 +230,11 @@ def main():
     # efficiency
     x, y = compute_efficiency(args, range_param)
     ax4.plot(x,y)
-    ax4.set_ylabel("Efficiency")
+    ax4.set_ylabel("Efficiency [N/W]")
 
     # toplevel
     ax.set_xlabel(f"{range_param[0]} {range_param[1]}")
+    ax.set_title(f"Solenoid Force/Current/Power/Efficiency vs. {range_param[0]}")
     plt.show()
 
 if __name__ == "__main__":
