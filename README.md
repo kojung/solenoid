@@ -66,3 +66,26 @@ optional arguments:
   --dpi DPI             Figure resolution
 ```
 
+## Examples
+
+Varying number of turns
+
+```
+$ python solenoid/calculator.py -v 12 -l 0.1 -r 0.01 -a 20 -N 1000 5000 -p 300 -d 0.5
+```
+![](https://github.com/kojung/solenoid/raw/master/assets/turns.png?raw=True)
+
+Varying voltage
+
+```
+$ python solenoid/calculator.py -v 9 24 -l 0.1 -r 0.01 -a 20 -N 2000 -p 300 -d 0.5
+```
+![](https://github.com/kojung/solenoid/raw/master/assets/voltage.png?raw=True)
+
+Varying wire gauge
+
+```
+$ python solenoid/calculator.py -v 9 -l 0.1 -r 0.01 -a 10 30 -N 2000 -p 300 -d 0.5
+```
+
+![](https://github.com/kojung/solenoid/raw/master/assets/awg.png?raw=True)

@@ -266,7 +266,6 @@ def main():
 
     # power
     x, y = compute_power(args, range_param)
-    power_limit = current_limit * args.voltage[0]
     ax3.plot(x,y)
     ax3.plot(x, power_limit, '--', color='red')
     ax3.text(x[0], power_limit[1], "Power limit", color='red')
