@@ -53,8 +53,8 @@ Plot Force, Power, Efficiency as a function of ONE of the following parameters:
 
 - Voltage
 - Length
-- Radius
-- AWG
+- Inner Radius
+- Wire Gauge
 - Turns
 - Relative permeability
 - Packing density
@@ -69,7 +69,7 @@ Range parameters are specified as a start/end tuple.
     parser.add_argument("-r", "--radius", nargs="+", type=float, required=True,
         help="Solenoid inner radius (scalar or range)")
     parser.add_argument("-a", "--awg", nargs="+", type=int, required=True,
-        help="Wire AWG gauge (scalar or range)")
+        help="Wire gauge in AWG (scalar or range)")
     parser.add_argument("-N", "--turns", nargs="+", type=float, required=True,
         help="Number of turns (scalar or range)")
     parser.add_argument("-p", "--relative_permeability", nargs="+", type=float, required=True,
@@ -93,8 +93,8 @@ def compute_force(args, range_param) -> Tuple[Any, List[Force]]:
     for val in x:
         voltage               = val if range_name == "Voltage"               else args.voltage[0]
         length                = val if range_name == "Length"                else args.length[0]
-        radius                = val if range_name == "Radius"                else args.radius[0]
-        awg                   = val if range_name == "Awg"                   else args.awg[0]
+        radius                = val if range_name == "Inner Radius"          else args.radius[0]
+        awg                   = val if range_name == "Wire Gauge"            else args.awg[0]
         turns                 = val if range_name == "Turns"                 else args.turns[0]
         relative_permeability = val if range_name == "Relative Permeability" else args.relative_permeability[0]
         packing_density       = val if range_name == "Packing Density"       else args.packing_density[0]
@@ -117,12 +117,12 @@ def compute_current(args, range_param) -> Tuple[Any, List[Current]]:
     x = np.linspace(range_start, range_end, 30)
     y = []
     for val in x:
-        voltage               = val if range_name == "Voltage"               else args.voltage[0]
-        length                = val if range_name == "Length"                else args.length[0]
-        radius                = val if range_name == "Radius"                else args.radius[0]
-        awg                   = val if range_name == "Awg"                   else args.awg[0]
-        turns                 = val if range_name == "Turns"                 else args.turns[0]
-        packing_density       = val if range_name == "Packing Density"       else args.packing_density[0]
+        voltage               = val if range_name == "Voltage"         else args.voltage[0]
+        length                = val if range_name == "Length"          else args.length[0]
+        radius                = val if range_name == "Inner Radius"    else args.radius[0]
+        awg                   = val if range_name == "Wire Gauge"      else args.awg[0]
+        turns                 = val if range_name == "Turns"           else args.turns[0]
+        packing_density       = val if range_name == "Packing Density" else args.packing_density[0]
         c = current(
             v=voltage,
             awg=awg,
@@ -141,12 +141,12 @@ def compute_power(args, range_param) -> Tuple[Any, List[Power]]:
     x = np.linspace(range_start, range_end, 30)
     y = []
     for val in x:
-        voltage               = val if range_name == "Voltage"               else args.voltage[0]
-        length                = val if range_name == "Length"                else args.length[0]
-        radius                = val if range_name == "Radius"                else args.radius[0]
-        awg                   = val if range_name == "Awg"                   else args.awg[0]
-        turns                 = val if range_name == "Turns"                 else args.turns[0]
-        packing_density       = val if range_name == "Packing Density"       else args.packing_density[0]
+        voltage               = val if range_name == "Voltage"         else args.voltage[0]
+        length                = val if range_name == "Length"          else args.length[0]
+        radius                = val if range_name == "Inner Radius"    else args.radius[0]
+        awg                   = val if range_name == "Wire Gauge"      else args.awg[0]
+        turns                 = val if range_name == "Turns"           else args.turns[0]
+        packing_density       = val if range_name == "Packing Density" else args.packing_density[0]
         p = power(
             v=voltage,
             awg=awg,
@@ -167,8 +167,8 @@ def compute_efficiency(args, range_param) -> Tuple[Any, List[Efficiency]]:
     for val in x:
         voltage               = val if range_name == "Voltage"               else args.voltage[0]
         length                = val if range_name == "Length"                else args.length[0]
-        radius                = val if range_name == "Radius"                else args.radius[0]
-        awg                   = val if range_name == "Awg"                   else args.awg[0]
+        radius                = val if range_name == "Inner Radius"          else args.radius[0]
+        awg                   = val if range_name == "Wire Gauge"            else args.awg[0]
         turns                 = val if range_name == "Turns"                 else args.turns[0]
         packing_density       = val if range_name == "Packing Density"       else args.packing_density[0]
         relative_permeability = val if range_name == "Relative Permeability" else args.relative_permeability[0]
@@ -193,8 +193,8 @@ def main():
     params = [
         ("Voltage",               "[V]", args.voltage),
         ("Length",                "[m]", args.length),
-        ("Radius",                "[m]", args.radius),
-        ("Awg",                   "[AWG]", args.awg),
+        ("Inner Radius",          "[m]", args.radius),
+        ("Wire Gauge",            "[AWG]", args.awg),
         ("Turns",                 "[#]", args.turns),
         ("Relative Permeability", "",    args.relative_permeability),
         ("Packing Density",       "",    args.packing_density),
@@ -219,7 +219,7 @@ def main():
     domain = np.linspace(range_start, range_end, 30)
 
     # current limit depends on wire gauge only
-    if range_name == "Awg":
+    if range_name == "Wire Gauge":
         # variable current limit
         current_limit = np.array([awg_current_limit(x) for x in domain])
     else:
