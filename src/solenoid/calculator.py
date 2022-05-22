@@ -24,6 +24,7 @@ import argparse
 from typing import List, Tuple, Any
 
 import matplotlib.pyplot as plt
+
 import numpy as np
 
 from solenoid.units import (
@@ -72,6 +73,12 @@ Range parameters are specified as a start/end tuple.
         help="Relative permeability (scalar)")
     parser.add_argument("-d", "--packing_density", nargs="+", type=float, required=True,
         help="Packing density")
+    parser.add_argument("--width", type=float, default=8,
+        help="Figure width in inches")
+    parser.add_argument("--height", type=float, default=10,
+        help="Figure height in inches")
+    parser.add_argument("--dpi", type=int, default=100,
+        help="Figure resolution")
     return parser.parse_args()
 
 # pylint: disable=too-many-locals
@@ -183,7 +190,7 @@ def main():
         ("Voltage",               "[V]", args.voltage),
         ("Length",                "[m]", args.length),
         ("Radius",                "[m]", args.radius),
-        ("Awg",                   "[#]", args.awg),
+        ("Awg",                   "[AWG]", args.awg),
         ("Turns",                 "[#]", args.turns),
         ("Relative Permeability", "",    args.relative_permeability),
         ("Packing Density",       "",    args.packing_density),
@@ -204,7 +211,8 @@ def main():
 
     assert range_param != (None, "", 0), "At least one parameter should be a range"
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(args.width, args.height), dpi=args.dpi)
+
     ax  = fig.add_subplot(511)  # legend
     ax1 = fig.add_subplot(512)
     ax2 = fig.add_subplot(513)
