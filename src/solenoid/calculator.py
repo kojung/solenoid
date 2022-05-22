@@ -64,7 +64,7 @@ Range parameters are specified as a start/end tuple.
         help="Solenoid length (scalar or range)")
     parser.add_argument("-r", "--radius", nargs="+", type=float, required=True,
         help="Solenoid inner radius (scalar or range)")
-    parser.add_argument("-a", "--awg", nargs="+", type=float, required=True,
+    parser.add_argument("-a", "--awg", nargs="+", type=int, required=True,
         help="Wire AWG gauge (scalar or range)")
     parser.add_argument("-N", "--turns", nargs="+", type=float, required=True,
         help="Number of turns (scalar or range)")
@@ -189,28 +189,37 @@ def main():
         ("Packing Density",       "",    args.packing_density),
     ]
     range_param = (None, "", 0)
+    textbox = []
     for name, unit, param in params:
         if len(param) > 1:
+            # make sure exactly 1 parameter is a ranged parameter
             if range_param == (None, "", 0):
                 range_param = (name, unit, param)
             else:
                 # pylint: disable=unsubscriptable-object
                 raise ValueError(f"Both parameters '{name}' and '{range_param[0]}' specified as range")
+        else:
+            # collect non-ranged parameters
+            textbox.append(f"{name} = {param[0]} {unit}")
+
     assert range_param != (None, "", 0), "At least one parameter should be a range"
 
     fig = plt.figure()
-    ax  = fig.add_subplot(111)  # big subplot
-    ax1 = fig.add_subplot(411)
-    ax2 = fig.add_subplot(412)
-    ax3 = fig.add_subplot(413)
-    ax4 = fig.add_subplot(414)
+    ax  = fig.add_subplot(511)  # legend
+    ax1 = fig.add_subplot(512)
+    ax2 = fig.add_subplot(513)
+    ax3 = fig.add_subplot(514)
+    ax4 = fig.add_subplot(515)
 
-    # Turn off axis lines and ticks of the big subplot
+    # Turn off axis lines and ticks of the legend
     ax.spines['top'].set_color('none')
     ax.spines['bottom'].set_color('none')
     ax.spines['left'].set_color('none')
     ax.spines['right'].set_color('none')
     ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0, 0, "\n".join(textbox), transform=ax.transAxes, bbox=props)
+    ax.set_title(f"Solenoid properties vs. {range_param[0]}")
 
     # force
     x, y = compute_force(args, range_param)
@@ -231,10 +240,9 @@ def main():
     x, y = compute_efficiency(args, range_param)
     ax4.plot(x,y)
     ax4.set_ylabel("Efficiency [N/W]")
+    ax4.set_xlabel(f"{range_param[0]} {range_param[1]}")
 
-    # toplevel
-    ax.set_xlabel(f"{range_param[0]} {range_param[1]}")
-    ax.set_title(f"Solenoid Force/Current/Power/Efficiency vs. {range_param[0]}")
+    # all done
     plt.show()
 
 if __name__ == "__main__":
